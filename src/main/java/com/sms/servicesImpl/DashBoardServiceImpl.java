@@ -30,17 +30,17 @@ public class DashBoardServiceImpl implements DashBoardService {
 
     @Override
     public Map<String, Object> getClassesData() {
-        List<ClassDetails> classDetails = classDetailsRepository.findAll();
+          List<com.sms.models.Class> classes = classRepository.findAll();
         Map<String, Object> result = new HashMap<>();
-        for (ClassDetails c : classDetails) {
+        for (com.sms.models.Class c : classes) {
             Map<String, Object> classMap = new HashMap<>();
             classMap.put("class", c.getClassName());
-            List<Map<String, String>> subjectsMap = classDetails.stream()
+            List<Map<String, String>> subjectsMap = c.getClassDetails().stream()
                     .map(s -> Map.of("subject", s.getSubject().getName(), "teacher", s.getTeacher().getName()))
                     .toList();
             classMap.put("subjects", subjectsMap);
-            classMap.put("total_students", c.getClassName().getStudents().size());
-            result.put(c.getClassName().getClassId().toString(), classMap);
+            classMap.put("total_students", c.getStudents().size());
+            result.put(c.getClassId().toString(), classMap);
         }
         return result;
     }
@@ -48,12 +48,12 @@ public class DashBoardServiceImpl implements DashBoardService {
     @Override
     public Map<String, String> getStats() {
         Map<String, String> result = new HashMap<>();
- List<ClassDetails> classDetails = classDetailsRepository.findAll();
+        List<com.sms.models.Class> classes = classRepository.findAll();
         result.put("total_teachers", String.valueOf(teacherRepository.count()));
         result.put("total_students", String.valueOf(studentRepository.count()));
         result.put("average_class_size", String.valueOf(studentRepository.count() / classRepository.count()));
-        Map<Subject, Long> popularSubjects = classDetails.stream().
-                collect(Collectors.groupingBy(s -> s.getSubject(), Collectors.counting()));
+        Map<Subject, Long> popularSubjects = classes.stream().flatMap(c->c.getClassDetails().stream())
+                .collect(Collectors.groupingBy(s -> s.getSubject(), Collectors.counting()));
         Subject mostpopularSubject = Collections.max(
                 popularSubjects.entrySet(),
                 Map.Entry.comparingByValue()).getKey();
