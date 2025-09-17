@@ -3,7 +3,7 @@ package com.sms.services;
 import java.util.List;
 
 import com.sms.dtos.StudentDto;
-import com.sms.models.Student;
+
 
 public interface StudentService {
      List<StudentDto> getAllStudents();
